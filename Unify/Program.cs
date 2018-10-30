@@ -32,7 +32,7 @@ namespace Unify
                 var content = new FormUrlEncodedContent(new[]
                 {
                 new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                    new KeyValuePair<string, string>("code", "BQCZPUppz8CP7LTZFNrUZcWlOtoUCVm5EZFzIxnALeZrJjSECJavhwkP"),
+                    new KeyValuePair<string, string>("code", "AQCkACaJXLZ7X3pD2lN1kBJYVV-HpLSdE6kGk5KEp2n2P6fKZcw60sj1GbeUvgHxAHWgAap4pWTTjsGRYI-skpdxCA9XsvOeLtLipHFk_BkPY-skM-LbqoafodyQbCVhPc9umlQgsKqn5HrFAHaacNDmkqOAYVPWtwToswtJ3ZRakJH3Sg1OYyfSlcZIAQNjBJecX58T7LXuFhopFbyC5JfdbrC2Gsk"),
                     new KeyValuePair<string, string>("redirect_uri", redirectUri),
                     new KeyValuePair<string, string>("client_id", clientId),
                     new KeyValuePair<string, string>("client_secret", clientSecret),
@@ -42,17 +42,10 @@ namespace Unify
                 var response = await g.Content.ReadAsStringAsync();
                 Console.WriteLine(response);
 
-                var auth = new AuthParams();
+                var auth = JsonConvert.DeserializeObject<AuthParams>(response);
 
-                dynamic x = JsonConvert.DeserializeObject(response);
-                auth.access_token = x.access_token;
-                auth.token_type = x.token_type;
-                auth.expires_in = x.expires_in;
-                auth.refresh_token = x.refresh_token;
-                auth.scope = x.scope;
-
-                Console.WriteLine(auth.token_type);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.access_token);
+                Console.WriteLine(auth.TokenType);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
 
                 var get = await client.GetAsync("https://api.spotify.com/v1/me/tracks");
 
