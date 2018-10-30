@@ -52,17 +52,10 @@ namespace Unify
                 var response = await g.Content.ReadAsStringAsync();
                 Console.WriteLine(response);
 
-                var auth = new AuthParams();
+                var auth = JsonConvert.DeserializeObject<AuthParams>(response);
 
-                dynamic x = JsonConvert.DeserializeObject(response);
-                auth.access_token = x.access_token;
-                auth.token_type = x.token_type;
-                auth.expires_in = x.expires_in;
-                auth.refresh_token = x.refresh_token;
-                auth.scope = x.scope;
-
-                Console.WriteLine(auth.token_type);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.access_token);
+                Console.WriteLine(auth.TokenType);
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
 
                 var get = await client.GetAsync("https://api.spotify.com/v1/me/tracks");
 
