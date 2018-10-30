@@ -4,6 +4,7 @@ using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
+using Newtonsoft.Json.Serialization;
 
 namespace Unify
 {
@@ -11,6 +12,15 @@ namespace Unify
     {
         static void Main(string[] args)
         {
+            // Set the default serialization
+            JsonConvert.DefaultSettings = () => new JsonSerializerSettings
+            {
+                ContractResolver = new DefaultContractResolver
+                {
+                    NamingStrategy = new SnakeCaseNamingStrategy()
+                },
+            };
+
             Run().Wait();
         }
 
@@ -31,8 +41,8 @@ namespace Unify
             {
                 var content = new FormUrlEncodedContent(new[]
                 {
-                new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                    new KeyValuePair<string, string>("code", "AQCkACaJXLZ7X3pD2lN1kBJYVV-HpLSdE6kGk5KEp2n2P6fKZcw60sj1GbeUvgHxAHWgAap4pWTTjsGRYI-skpdxCA9XsvOeLtLipHFk_BkPY-skM-LbqoafodyQbCVhPc9umlQgsKqn5HrFAHaacNDmkqOAYVPWtwToswtJ3ZRakJH3Sg1OYyfSlcZIAQNjBJecX58T7LXuFhopFbyC5JfdbrC2Gsk"),
+                    new KeyValuePair<string, string>("grant_type", "authorization_code"),
+                    new KeyValuePair<string, string>("code", "BQCZPUppz8CP7LTZFNrUZcWlOtoUCVm5EZFzIxnALeZrJjSECJavhwkP"),
                     new KeyValuePair<string, string>("redirect_uri", redirectUri),
                     new KeyValuePair<string, string>("client_id", clientId),
                     new KeyValuePair<string, string>("client_secret", clientSecret),
@@ -54,7 +64,7 @@ namespace Unify
 
                 foreach (var item in z)
                 {
-                    Console.WriteLine(z.limit);
+                    Console.WriteLine(z.items);
                 }
             }
 
