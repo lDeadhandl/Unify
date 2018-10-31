@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Threading.Tasks;
@@ -42,7 +43,7 @@ namespace Unify
                 var content = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                    new KeyValuePair<string, string>("code", "BQCZPUppz8CP7LTZFNrUZcWlOtoUCVm5EZFzIxnALeZrJjSECJavhwkP"),
+                    new KeyValuePair<string, string>("code", "AQDOIRURHNlq9aFBiRWXxJ8DWLepOphhno3iDWqFxar5s8i91-iOAZTGtk6zhMVK1UncLKNVQue18TLdBA-5e0SR7UhHdDNYRnQzS298dd25FutYUigSkxrt_N_NmYkt7Nf7u6C_cHUqBIlvwX616z5W6rfkTf3xX7TqwUPv3JF9WTLytcNE9P-ow6JXnBvd5V-CTnYHgYOum751bUSGeeIGBVQl3Co"),
                     new KeyValuePair<string, string>("redirect_uri", redirectUri),
                     new KeyValuePair<string, string>("client_id", clientId),
                     new KeyValuePair<string, string>("client_secret", clientSecret),
@@ -59,13 +60,24 @@ namespace Unify
 
                 var get = await client.GetAsync("https://api.spotify.com/v1/me/tracks");
 
-                var tracks = await get.Content.ReadAsStringAsync();
-                dynamic z = JsonConvert.DeserializeObject(tracks);
+                var tracksContent = await get.Content.ReadAsStringAsync();
 
-                foreach (var item in z)
+                var tracks = JsonConvert.DeserializeObject<Paging<SavedTrack>>(tracksContent);
+                
+                Console.WriteLine(string.Join('\n', tracks.Items.Select(x => x.Track.Name)));
+
+                int count = tracks.Total;
+                var songIds = new List<string>();
+                for (int i = 0; i < count; i++)
                 {
-                    Console.WriteLine(z.items);
+                    // get ids by groups of 00
+                    var ids = tracks.Items.Select(x => x.Track.Id).Skip(100 * i).Take(count);
+
+                    // create comma separated list                  
+                    var q = string.Join(',', ids);
                 }
+                    
+
             }
 
         }
