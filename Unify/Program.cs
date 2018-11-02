@@ -14,6 +14,7 @@ namespace Unify
         static void Main(string[] args)
         {
             // Set the default serialization
+            
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
@@ -43,7 +44,7 @@ namespace Unify
                 var content = new FormUrlEncodedContent(new[]
                 {
                     new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                    new KeyValuePair<string, string>("code", "AQDOIRURHNlq9aFBiRWXxJ8DWLepOphhno3iDWqFxar5s8i91-iOAZTGtk6zhMVK1UncLKNVQue18TLdBA-5e0SR7UhHdDNYRnQzS298dd25FutYUigSkxrt_N_NmYkt7Nf7u6C_cHUqBIlvwX616z5W6rfkTf3xX7TqwUPv3JF9WTLytcNE9P-ow6JXnBvd5V-CTnYHgYOum751bUSGeeIGBVQl3Co"),
+                    new KeyValuePair<string, string>("code", "AQDBxl0dOlvjOKA3XV4wF-TFMCqWbWGS3vWipA6bPc6JDmi9J04oASZEhEtjdybOIm-pHslDDQa7KKW7ce9gJDwA57YriUH_0XWBaKunBqcpCfYMLKJH0uAL6hfhVWoBnVFR6b2JJsRH8V7TuSJBN6aka8_6Kvn2TVUV1Aj5MKdWUW4zoEDzeugmhQuNuT6RviJZcuTTMx91Viqd8bFw3OWpX5uWfUk"),
                     new KeyValuePair<string, string>("redirect_uri", redirectUri),
                     new KeyValuePair<string, string>("client_id", clientId),
                     new KeyValuePair<string, string>("client_secret", clientSecret),
@@ -58,25 +59,37 @@ namespace Unify
                 Console.WriteLine(auth.TokenType);
                 client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
 
-                var get = await client.GetAsync("https://api.spotify.com/v1/me/tracks");
-
-                var tracksContent = await get.Content.ReadAsStringAsync();
-
-                var tracks = JsonConvert.DeserializeObject<Paging<SavedTrack>>(tracksContent);
-                
-                Console.WriteLine(string.Join('\n', tracks.Items.Select(x => x.Track.Name)));
-
-                int count = tracks.Total;
-                var songIds = new List<string>();
-                for (int i = 0; i < count; i++)
+                Enumerable.Range(0,3).Select(i => client.GetAsync("https://api.spotify.com/v1/me/tracks?limit=50&offset=" + (i * 50)));
+                // ToDo: Transform into LINQ
+                var tasks = new List<Task<HttpResponseMessage>>();
+                for (int i = 0; i < 3; i++)
                 {
-                    // get ids by groups of 00
-                    var ids = tracks.Items.Select(x => x.Track.Id).Skip(100 * i).Take(count);
-
-                    // create comma separated list                  
-                    var q = string.Join(',', ids);
+                    tasks.Add(client.GetAsync("https://api.spotify.com/v1/me/tracks?limit=50&offset=" + (i * 50)));
                 }
-                    
+
+                var tracs = await Task.WhenAll(tasks);
+                
+                    var tracksContent = await item.Content.ReadAsStringAsync();                    
+                    var tracks = JsonConvert.DeserializeObject<Paging<SavedTrack>>(tracksContent);
+                    var trackIds = string.Join('\n', tracks.Items.Select(x => x.Track.Name));
+                    Console.WriteLine(trackIds);
+                
+
+                ////Console.WriteLine(trackIds);
+                //var l = await client.GetAsync("https://api.spotify.com/v1/audio-features?ids=" + trackIds);
+                //var features = await l.Content.ReadAsStringAsync();
+                //Console.WriteLine(features);
+                //int count = tracks.Total;
+
+                //for (int i = 0; i < count; i++)
+                //{
+                //    // get ids by groups of 00
+                //    var ids = string.Join(',', tracks.Items.Select(x => x.Track.Id).Skip(100 * i).Take(count));
+
+                //    // create comma separated list                  
+
+                //}
+
 
             }
 
