@@ -6,6 +6,13 @@ using System.Net.Http.Headers;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using Accord.MachineLearning.DecisionTrees;
+using System.Data;
+using Accord.Statistics.Filters;
+using Accord.Math;
+using Accord.MachineLearning.DecisionTrees.Learning;
+using Accord.Math.Optimization.Losses;
+using Accord;
 
 namespace Unify
 {
@@ -13,8 +20,7 @@ namespace Unify
     {
         static void Main(string[] args)
         {
-            // Set the default serialization
-            
+            // Set the default serialization           
             JsonConvert.DefaultSettings = () => new JsonSerializerSettings
             {
                 ContractResolver = new DefaultContractResolver
@@ -23,107 +29,39 @@ namespace Unify
                 },
             };
 
+
+
             Run().Wait();
+
         }
 
         public static async Task Run()
         {
-
-            var clientId = "e7b6b7ff0e444353aa5edfa5ea1728cb";
-            var clientSecret = "c0a6951732fa4aeb82f9975902ac6ff1";
-            var redirectUri = "https://example.com/callback";
-
-            //var auth = new HttpClient();
-            //var x = await auth.GetAsync("https://accounts.spotify.com/authorize/?client_id=e7b6b7ff0e444353aa5edfa5ea1728cb&response_type=code&scope=user-library-read&redirect_uri=https://example.com/callback");
             //Console.WriteLine(x.Content);
+            var Stef = new Authorization();
+            var Chris = new Authorization();
 
+            await Chris.SetAuthorization("AQAVWY-wd8y1XiEQ0k0PNmRjt1T_EodsXAS2GHRPr_xSaxSd4drOrAgnsjzceCEoFqX3G2TK_4yC9UPj8ry45XEQrqBZWoZ_D9Q0oO213p3D2T_6OL9FTuI6Or1AleexRJZ280Aarz-QPiXClBdu6RUY6SqQ7IQ1fSr3CJdYbj0j6VfrU-t_GfqYwemd0JX4ZPGbaPpo94vFNqZDl1sTL-kztl9Euj8");
+            await Stef.SetAuthorization("AQCiHdTAgUgHyCeLPFgvqMMovjMziLKDWLlPP6SyWBqrCfDl_BSAksQnlWRpYS5X0XIO6E1JgDYa7GDg4ST98KcScbTN3_JntmYwZ0xo7j56KDch00g3lS0f3Iw1YHGE3VhaybgFhFdAUjm_7iG7dJ6ciapa_SNPz-Xocx5_Tt-_UIPO-bma-Jgh990veOLd3l2uXTyjBzQ2g5C304lWDnoS6WlhmxM");
+            
+            await Stef.GetTracks(6);
+            await Chris.GetTracks(6);
 
+            Stef.Comparator(Stef.Tracks, Chris.Tracks);
 
-            using (var client = new HttpClient())
-            {
-                var content = new FormUrlEncodedContent(new[]
-                {
-                    new KeyValuePair<string, string>("grant_type", "authorization_code"),
-                    new KeyValuePair<string, string>("code", "AQDBxl0dOlvjOKA3XV4wF-TFMCqWbWGS3vWipA6bPc6JDmi9J04oASZEhEtjdybOIm-pHslDDQa7KKW7ce9gJDwA57YriUH_0XWBaKunBqcpCfYMLKJH0uAL6hfhVWoBnVFR6b2JJsRH8V7TuSJBN6aka8_6Kvn2TVUV1Aj5MKdWUW4zoEDzeugmhQuNuT6RviJZcuTTMx91Viqd8bFw3OWpX5uWfUk"),
-                    new KeyValuePair<string, string>("redirect_uri", redirectUri),
-                    new KeyValuePair<string, string>("client_id", clientId),
-                    new KeyValuePair<string, string>("client_secret", clientSecret),
-                });
-                var g = await client.PostAsync("https://accounts.spotify.com/api/token", content);
+            //var stef = string.Join('\n', Stef.Tracks);
+            //var chris = string.Join('\n', Chris.Tracks); 
+            var list = Stef.TargetList;
+            var list1 = Stef.TargetValues;
 
-                var response = await g.Content.ReadAsStringAsync();
-                Console.WriteLine(response);
-
-                var auth = JsonConvert.DeserializeObject<AuthParams>(response);
-
-                Console.WriteLine(auth.TokenType);
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", auth.AccessToken);
-
-                Enumerable.Range(0,3).Select(i => client.GetAsync("https://api.spotify.com/v1/me/tracks?limit=50&offset=" + (i * 50)));
-                // ToDo: Transform into LINQ
-                var tasks = new List<Task<HttpResponseMessage>>();
-                for (int i = 0; i < 3; i++)
-                {
-                    tasks.Add(client.GetAsync("https://api.spotify.com/v1/me/tracks?limit=50&offset=" + (i * 50)));
-                }
-
-                var tracs = await Task.WhenAll(tasks);
-                
-                    var tracksContent = await item.Content.ReadAsStringAsync();                    
-                    var tracks = JsonConvert.DeserializeObject<Paging<SavedTrack>>(tracksContent);
-                    var trackIds = string.Join('\n', tracks.Items.Select(x => x.Track.Name));
-                    Console.WriteLine(trackIds);
-                
-
-                ////Console.WriteLine(trackIds);
-                //var l = await client.GetAsync("https://api.spotify.com/v1/audio-features?ids=" + trackIds);
-                //var features = await l.Content.ReadAsStringAsync();
-                //Console.WriteLine(features);
-                //int count = tracks.Total;
-
-                //for (int i = 0; i < count; i++)
-                //{
-                //    // get ids by groups of 00
-                //    var ids = string.Join(',', tracks.Items.Select(x => x.Track.Id).Skip(100 * i).Take(count));
-
-                //    // create comma separated list                  
-
-                //}
-
-
-            }
-
-        }
-
-        //public static async Task Run2()
-        //{
-        //    var s = new SpotifyAPI.Web.SpotifyWebAPI();
-        //    var g = new SpotifyAPI.Web.SpotifyWebBuilder(); 
 
             
+            //TO DO: Now that GetAudioFeatures accepts the list post-comparator, it is time to develop the decision tree
+            await Stef.GetAudioFeatures(Stef.TargetListIds);
+            Stef.DecisionTree();
 
-        //    WebAPIFactory webApiFactory = new WebAPIFactory(
-        //                             "https://example.com/callback",
-        //                             8000,
-        //                             "e7b6b7ff0e444353aa5edfa5ea1728cb",
-        //                             Scope.UserReadPrivate
-        //                        );
+            Console.ReadLine();
+        }
 
-        //    SpotifyAPI.Web.SpotifyWebAPI _spotify = null;
-
-        //    try
-        //    {
-        //        //This will open the user's browser and returns once
-        //        //the user is authorized.
-        //        _spotify = await webApiFactory.GetWebApi();
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        Console.WriteLine(ex.Message);
-        //    }
-
-        //    if (_spotify == null)
-        //        return;
-        //}
     }
 }
